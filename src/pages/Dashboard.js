@@ -39,8 +39,12 @@ const Dashboard = () => {
 
   // Calculate dashboard statistics
   const totalStudents = students.length;
-  const presentToday = attendanceRecords.filter(record => record.status === 'PRESENT').length;
-  const absentToday = attendanceRecords.filter(record => record.status === 'ABSENT').length;
+  const presentToday = attendanceRecords.records ? 
+    attendanceRecords.records.filter(record => record.status === 'PRESENT').length : 
+    attendanceRecords.filter(record => record.status === 'PRESENT').length;
+  const absentToday = attendanceRecords.records ? 
+    attendanceRecords.records.filter(record => record.status === 'ABSENT').length : 
+    attendanceRecords.filter(record => record.status === 'ABSENT').length;
   const attendanceRate = totalStudents > 0 ? ((presentToday / totalStudents) * 100).toFixed(1) : 0;
 
   // Class distribution data
@@ -96,10 +100,13 @@ const Dashboard = () => {
     }
   ];
 
-  if (studentsLoading) {
+  if (studentsLoading || attendanceLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard data...</p>
+        </div>
       </div>
     );
   }
@@ -198,13 +205,13 @@ const Dashboard = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Attendance Activity</h3>
-          {attendanceRecords.length > 0 ? (
+          {(attendanceRecords.records || attendanceRecords).length > 0 ? (
             <div className="flow-root">
               <ul className="-mb-8">
-                {attendanceRecords.slice(0, 5).map((record, index) => (
+                {(attendanceRecords.records || attendanceRecords).slice(0, 5).map((record, index) => (
                   <li key={record.id}>
                     <div className="relative pb-8">
-                      {index !== attendanceRecords.length - 1 && (
+                      {index !== (attendanceRecords.records || attendanceRecords).length - 1 && (
                         <span
                           className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
                           aria-hidden="true"

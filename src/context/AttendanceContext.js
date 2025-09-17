@@ -92,10 +92,15 @@ export const AttendanceProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await attendanceAPI.getReport(params);
-      dispatch({ type: 'SET_ATTENDANCE_RECORDS', payload: response.data.data });
-      return response.data.data;
+      
+      if (response.data.success && response.data.data) {
+        dispatch({ type: 'SET_ATTENDANCE_RECORDS', payload: response.data.data });
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to fetch attendance report';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch attendance report';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       toast.error(errorMessage);
       throw error;

@@ -44,9 +44,15 @@ export const StudentProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await studentAPI.getAll();
-      dispatch({ type: 'SET_STUDENTS', payload: response.data.data });
+      
+      // Handle new Prisma response structure
+      if (response.data.success && response.data.data) {
+        dispatch({ type: 'SET_STUDENTS', payload: response.data.data });
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to fetch students';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch students';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       toast.error(errorMessage);
     }
@@ -55,11 +61,16 @@ export const StudentProvider = ({ children }) => {
   const addStudent = async (studentData) => {
     try {
       const response = await studentAPI.create(studentData);
-      dispatch({ type: 'ADD_STUDENT', payload: response.data.data });
-      toast.success('Student added successfully');
-      return response.data.data;
+      
+      if (response.data.success && response.data.data) {
+        dispatch({ type: 'ADD_STUDENT', payload: response.data.data });
+        toast.success(response.data.message || 'Student added successfully');
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to add student';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add student';
       toast.error(errorMessage);
       throw error;
     }
@@ -68,11 +79,16 @@ export const StudentProvider = ({ children }) => {
   const updateStudent = async (id, studentData) => {
     try {
       const response = await studentAPI.update(id, studentData);
-      dispatch({ type: 'UPDATE_STUDENT', payload: response.data.data });
-      toast.success('Student updated successfully');
-      return response.data.data;
+      
+      if (response.data.success && response.data.data) {
+        dispatch({ type: 'UPDATE_STUDENT', payload: response.data.data });
+        toast.success(response.data.message || 'Student updated successfully');
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to update student';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update student';
       toast.error(errorMessage);
       throw error;
     }
@@ -80,11 +96,16 @@ export const StudentProvider = ({ children }) => {
 
   const deleteStudent = async (id) => {
     try {
-      await studentAPI.delete(id);
-      dispatch({ type: 'DELETE_STUDENT', payload: id });
-      toast.success('Student deleted successfully');
+      const response = await studentAPI.delete(id);
+      
+      if (response.data.success) {
+        dispatch({ type: 'DELETE_STUDENT', payload: id });
+        toast.success(response.data.message || 'Student deleted successfully');
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to delete student';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete student';
       toast.error(errorMessage);
       throw error;
     }

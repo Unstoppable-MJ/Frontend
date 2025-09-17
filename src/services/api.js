@@ -27,6 +27,21 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error.response?.data || error.message);
+    
+    // Handle network errors
+    if (!error.response) {
+      error.message = 'Network error. Please check your connection.';
+    }
+    
+    // Handle specific error cases
+    if (error.response?.status === 404) {
+      error.message = 'Resource not found';
+    } else if (error.response?.status === 500) {
+      error.message = 'Server error. Please try again later.';
+    } else if (error.response?.status === 400) {
+      error.message = error.response?.data?.message || 'Invalid request';
+    }
+    
     return Promise.reject(error);
   }
 );
